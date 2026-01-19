@@ -9,6 +9,7 @@ interface ExpenseState {
   fetchAllExpenses: () => Promise<void>;
   addExpense: (expense: Omit<Expense, "id">) => Promise<void>;
   deleteExpense: (id: number) => Promise<void>;
+  updateExpense: (expense: Expense) => Promise<void>;
   filterByCategory: (category: string) => void;
 }
 
@@ -35,6 +36,16 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
     set((state) => ({
       expenses: state.expenses.filter((e) => e.id !== id),
       filteredExpenses: state.filteredExpenses.filter((e) => e.id !== id),
+    }));
+  },
+
+  updateExpense: async (updatedExpense) => {
+    const res = await expenseService.updateExpenseAPI(updatedExpense);
+    set((state) => ({
+      expenses: state.expenses.map((e) => (e.id === res.id ? res : e)),
+      filteredExpenses: state.filteredExpenses.map((e) =>
+        e.id === res.id ? res : e,
+      ),
     }));
   },
 

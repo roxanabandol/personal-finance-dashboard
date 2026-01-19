@@ -33,3 +33,13 @@ export const deleteExpenseAPI = async (id: number) => {
     throw err;
   }
 };
+
+export const updateExpenseAPI = async (expense: Expense): Promise<Expense> => {
+  try {
+    const res = await axios.put(`${API_URL}/${expense.id}`, expense);
+    return res.data;
+  } catch (err) {
+    console.error("Error updating expense:", err);
+    throw err;
+  }
+};

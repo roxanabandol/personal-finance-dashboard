@@ -3,7 +3,7 @@
     {
       "id": 2,
       "description": "Bus Ticket",
-      "amount": 3,
+      "amount": 5,
       "category": "Transport",
       "date": "2026-01-18T09:30:00.000Z"
     },
