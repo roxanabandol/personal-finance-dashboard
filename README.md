@@ -9,7 +9,7 @@ Ideal for portfolio use, demonstrating frontend skills and state management with
 
 ## Features
 
-- Add, view, and delete expenses
+- Add, view, edit and delete expenses
 - Dashboard with **statistic cards** (Total, Food, Transport)
 - **Bar Chart** visualizing expenses by category
 - Filter expenses by category
@@ -44,14 +44,3 @@ npm run server
 npm start
 ```
 
-Future Improvements
-
-Edit existing transactions
-
-Authentication with Firebase
-
-Real database persistence with Firebase Firestore or MongoDB
-
-Additional charts (Line chart, Pie chart)
-
-Export transactions as CSV
