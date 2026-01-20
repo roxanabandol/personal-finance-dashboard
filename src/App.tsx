@@ -5,6 +5,7 @@ import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { useEffect } from "react";
 import { useExpenseStore } from "./store/useExpenseStore";
+import { Chatbot } from "./components/Chatbot";
 
 function App() {
   const { startRealtimeSync, stopRealtimeSync } = useExpenseStore();
@@ -26,6 +27,7 @@ function App() {
               <Route path="/transactions" element={<Transactions />} />
             </Routes>
           </main>
+          <Chatbot />
         </div>
       </div>
     </Router>
