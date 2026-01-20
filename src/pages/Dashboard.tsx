@@ -3,28 +3,20 @@ import { useExpenseStore } from "../store/useExpenseStore";
 import { useChartData } from "../hooks/useChartData";
 import { Card } from "../components/Card";
 import { ExpenseChart } from "../components/ExpenseChart";
+import { useUIStore } from "../store/useUIStore";
 
 export const Dashboard = () => {
   const { filteredExpenses, fetchAllExpenses } = useExpenseStore();
+  const { loading, error } = useUIStore();
   useEffect(() => {
     fetchAllExpenses();
   }, []);
 
   const chartData = useChartData(filteredExpenses);
   const total = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
-  const categories = ["Food", "Transport", "Entertainment", "Other"];
-  const stats = categories.map((cat) => ({
-    label: cat,
-    value: filteredExpenses
-      .filter((e) => e.category === cat)
-      .reduce((acc, e) => acc + e.amount, 0),
-    color:
-      cat === "Food"
-        ? "text-green-600"
-        : cat === "Transport"
-          ? "text-yellow-600"
-          : "text-blue-600",
-  }));
+
+  if (loading) return <p className="text-blue-600">Loading...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div>
@@ -34,13 +26,6 @@ export const Dashboard = () => {
             ${total.toFixed(2)}
           </p>
         </Card>
-        {stats.map((stat) => (
-          <Card key={stat.label} title={stat.label}>
-            <p className={`text-2xl font-bold ${stat.color}`}>
-              ${stat.value.toFixed(2)}
-            </p>
-          </Card>
-        ))}
       </div>
 
       <Card title="Expenses by Category">

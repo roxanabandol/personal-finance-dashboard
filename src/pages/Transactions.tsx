@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useExpenseStore } from "../store/useExpenseStore";
+import { useUIStore } from "../store/useUIStore";
 import { FormField } from "../components/FormField";
 import { SelectField } from "../components/SelectField";
 import { TransactionCard } from "../components/TransactionCard";
 
 export const Transactions = () => {
   const { filteredExpenses, fetchAllExpenses, addExpense } = useExpenseStore();
+  const { loading, error } = useUIStore();
+
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
   const [category, setCategory] = useState("Food");
@@ -28,6 +31,9 @@ export const Transactions = () => {
 
   return (
     <div>
+      {loading && <p className="text-blue-600">Loading...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
       <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
         Transactions
       </h1>
@@ -51,11 +57,12 @@ export const Transactions = () => {
         />
         <button
           onClick={handleAdd}
-          className="bg-blue-600 text-white px-4 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           Add
         </button>
       </div>
+
       <ul>
         {filteredExpenses.map((exp) => (
           <TransactionCard key={exp.id} expense={exp} />

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useExpenseStore } from "../store/useExpenseStore";
+import { useUIStore } from "../store/useUIStore";
+import { Expense } from "../types/expense";
 import { AnimatedListItem } from "./AnimatedListItem";
+import { Modal } from "./Modal";
 import { FormField } from "./FormField";
 import { SelectField } from "./SelectField";
-import { Expense } from "../types/expense";
 
 interface Props {
   expense: Expense;
@@ -11,14 +13,15 @@ interface Props {
 
 export const TransactionCard = ({ expense }: Props) => {
   const { deleteExpense, updateExpense } = useExpenseStore();
-  const [isEditing, setIsEditing] = useState(false);
+  const { isModalOpen, openModal, closeModal } = useUIStore();
+
   const [description, setDescription] = useState(expense.description);
   const [amount, setAmount] = useState(expense.amount);
   const [category, setCategory] = useState(expense.category);
 
   const handleUpdate = async () => {
     await updateExpense({ ...expense, description, amount, category });
-    setIsEditing(false);
+    closeModal();
   };
 
   const handleDelete = async () => {
@@ -27,65 +30,67 @@ export const TransactionCard = ({ expense }: Props) => {
   };
 
   return (
-    <AnimatedListItem className="flex justify-between items-center p-4 bg-white dark:bg-gray-700 shadow rounded-lg mb-2 hover:shadow-lg hover:bg-blue-50 dark:hover:bg-gray-600 transition">
-      {isEditing ? (
-        <div className="flex gap-2 flex-1 flex-wrap">
-          <FormField
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <FormField
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
-          />
-          <SelectField
-            options={["Food", "Transport", "Entertainment", "Other"]}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
+    <>
+      <AnimatedListItem className="flex justify-between items-center p-4 bg-white dark:bg-gray-700 shadow rounded-lg mb-2 hover:shadow-lg hover:bg-blue-50 dark:hover:bg-gray-600 transition">
+        <div>
+          <p className="font-semibold text-gray-800 dark:text-white">
+            {expense.description}
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-300">
+            {expense.category} - {new Date(expense.date).toLocaleDateString()}
+          </p>
+        </div>
+        <div className="flex items-center gap-4">
+          <p className="font-bold text-blue-600">
+            ${expense.amount.toFixed(2)}
+          </p>
           <button
-            onClick={handleUpdate}
-            className="bg-green-600 text-white px-4 rounded hover:bg-green-700"
+            onClick={openModal}
+            className="text-yellow-500 hover:text-yellow-700"
           >
-            Save
+            Edit
           </button>
           <button
-            onClick={() => setIsEditing(false)}
-            className="bg-gray-400 text-white px-4 rounded hover:bg-gray-500"
+            onClick={handleDelete}
+            className="text-red-500 hover:text-red-700"
           >
-            Cancel
+            Delete
           </button>
         </div>
-      ) : (
-        <>
-          <div>
-            <p className="font-semibold text-gray-800 dark:text-white">
-              {expense.description}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-300">
-              {expense.category} - {new Date(expense.date).toLocaleDateString()}
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <p className="font-bold text-blue-600">
-              ${expense.amount.toFixed(2)}
-            </p>
+      </AnimatedListItem>
+
+      {isModalOpen && (
+        <Modal onClose={closeModal}>
+          <h2 className="text-lg font-bold mb-4 text-gray-800 dark:text-white">
+            Edit Transaction
+          </h2>
+          <div className="flex flex-col gap-3">
+            <FormField
+              label="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <FormField
+              type="number"
+              label="Amount"
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+            />
+            <SelectField
+              label="Category"
+              options={["Food", "Transport", "Entertainment", "Other"]}
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            />
             <button
-              onClick={() => setIsEditing(true)}
-              className="text-yellow-500 hover:text-yellow-700"
+              onClick={handleUpdate}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mt-2"
             >
-              Edit
-            </button>
-            <button
-              onClick={handleDelete}
-              className="text-red-500 hover:text-red-700"
-            >
-              Delete
+              Save
             </button>
           </div>
-        </>
+        </Modal>
       )}
-    </AnimatedListItem>
+    </>
   );
 };

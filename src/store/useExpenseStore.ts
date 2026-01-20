@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { Expense } from "../types/expense";
 import * as expenseService from "../services/expenseService";
+import { useUIStore } from "./useUIStore";
 
 interface ExpenseState {
   expenses: Expense[];
@@ -19,34 +20,66 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
   filterCategory: "All",
 
   fetchAllExpenses: async () => {
-    const data = await expenseService.fetchExpenses();
-    set({ expenses: data, filteredExpenses: data });
+    const { setLoading, setError } = useUIStore.getState();
+    setLoading(true);
+    try {
+      const data = await expenseService.fetchExpenses();
+      set({ expenses: data, filteredExpenses: data });
+      setLoading(false);
+    } catch {
+      setError("Failed to load expenses");
+      setLoading(false);
+    }
   },
 
   addExpense: async (expense) => {
-    const newExpense = await expenseService.addExpenseAPI(expense);
-    set((state) => ({
-      expenses: [...state.expenses, newExpense],
-      filteredExpenses: [...state.filteredExpenses, newExpense],
-    }));
+    const { setLoading, setError } = useUIStore.getState();
+    setLoading(true);
+    try {
+      const newExpense = await expenseService.addExpenseAPI(expense);
+      set((state) => ({
+        expenses: [...state.expenses, newExpense],
+        filteredExpenses: [...state.filteredExpenses, newExpense],
+      }));
+      setLoading(false);
+    } catch {
+      setError("Failed to add expense");
+      setLoading(false);
+    }
   },
 
   deleteExpense: async (id) => {
-    await expenseService.deleteExpenseAPI(id);
-    set((state) => ({
-      expenses: state.expenses.filter((e) => e.id !== id),
-      filteredExpenses: state.filteredExpenses.filter((e) => e.id !== id),
-    }));
+    const { setLoading, setError } = useUIStore.getState();
+    setLoading(true);
+    try {
+      await expenseService.deleteExpenseAPI(id);
+      set((state) => ({
+        expenses: state.expenses.filter((e) => e.id !== id),
+        filteredExpenses: state.filteredExpenses.filter((e) => e.id !== id),
+      }));
+      setLoading(false);
+    } catch {
+      setError("Failed to delete expense");
+      setLoading(false);
+    }
   },
 
   updateExpense: async (updatedExpense) => {
-    const res = await expenseService.updateExpenseAPI(updatedExpense);
-    set((state) => ({
-      expenses: state.expenses.map((e) => (e.id === res.id ? res : e)),
-      filteredExpenses: state.filteredExpenses.map((e) =>
-        e.id === res.id ? res : e,
-      ),
-    }));
+    const { setLoading, setError } = useUIStore.getState();
+    setLoading(true);
+    try {
+      const res = await expenseService.updateExpenseAPI(updatedExpense);
+      set((state) => ({
+        expenses: state.expenses.map((e) => (e.id === res.id ? res : e)),
+        filteredExpenses: state.filteredExpenses.map((e) =>
+          e.id === res.id ? res : e,
+        ),
+      }));
+      setLoading(false);
+    } catch {
+      setError("Failed to update expense");
+      setLoading(false);
+    }
   },
 
   filterByCategory: (category) => {
