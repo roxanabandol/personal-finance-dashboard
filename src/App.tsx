@@ -1,11 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Dashboard from "./pages/Dashboard";
 import { Transactions } from "./pages/Transactions";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
 import { useEffect } from "react";
 import { useExpenseStore } from "./store/useExpenseStore";
 import { Chatbot } from "./components/Chatbot";
+import { Dashboard } from "./pages/Dashboard";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const { startRealtimeSync, stopRealtimeSync } = useExpenseStore();
@@ -27,9 +29,24 @@ function App() {
               <Route path="/transactions" element={<Transactions />} />
             </Routes>
           </main>
+
           <Chatbot />
         </div>
       </div>
+
+      {/* Toast notifications global */}
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </Router>
   );
 }

@@ -1,27 +1,32 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useExpenseStore } from "../store/useExpenseStore";
-import { useChartData } from "../hooks/useChartData";
+import { useUIStore } from "../store/useUIStore";
+import { useBudgetStore } from "../store/useBudgetStore";
 import { Card } from "../components/Card";
 import { ExpenseChart } from "../components/ExpenseChart";
-import { useUIStore } from "../store/useUIStore";
+import { toast } from "react-toastify";
 
-const Dashboard = () => {
-  const {
-    filteredExpenses,
-    filterCategory,
-    filterByCategory,
-    startRealtimeSync,
-    stopRealtimeSync,
-  } = useExpenseStore();
+export const Dashboard = () => {
+  const { filteredExpenses, filterCategory, filterByCategory } =
+    useExpenseStore();
   const { loading, error } = useUIStore();
+  const { budget, setBudget } = useBudgetStore();
+
+  const total = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
+
+  const alertShownRef = useRef(false);
 
   useEffect(() => {
-    startRealtimeSync();
-    return () => stopRealtimeSync();
-  }, []);
-
-  const chartData = useChartData(filteredExpenses);
-  const total = filteredExpenses.reduce((acc, e) => acc + e.amount, 0);
+    if (total > budget && !alertShownRef.current) {
+      toast.warning(
+        `⚠️ Budget exceeded! Limit: $${budget}, Current: $${total.toFixed(2)}`,
+      );
+      alertShownRef.current = true;
+    }
+    if (total <= budget && alertShownRef.current) {
+      alertShownRef.current = false;
+    }
+  }, [total, budget]);
 
   if (loading)
     return <p className="text-blue-600 dark:text-blue-400">Loading...</p>;
@@ -29,7 +34,18 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100">
-      <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <label className="font-medium">Set Budget:</label>
+          <input
+            type="number"
+            value={budget}
+            onChange={(e) => setBudget(Number(e.target.value))}
+            className="border p-1 rounded dark:bg-gray-700 dark:text-white"
+          />
+        </div>
+      </div>
 
       <div className="mb-4">
         <label className="mr-2 font-medium">Filter by category:</label>
@@ -47,18 +63,23 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+        <Card
+          title="Total Expenses"
+          className={total > budget ? "border-2 border-red-500" : ""}
+        >
+          <p
+            className={`text-2xl font-bold ${
+              total > budget ? "text-red-600" : "text-blue-600"
+            }`}
+          >
             ${total.toFixed(2)}
           </p>
         </Card>
       </div>
 
-      <Card className="dark:bg-gray-800 dark:border-gray-700">
+      <Card title="Expenses by Category">
         <ExpenseChart data={filteredExpenses} />
       </Card>
     </div>
   );
 };
-
-export default Dashboard;

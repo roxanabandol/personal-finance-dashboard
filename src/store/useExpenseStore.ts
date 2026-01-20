@@ -75,8 +75,11 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 
   startRealtimeSync: () => {
     const { setError, setLoading } = useUIStore.getState();
-    setLoading(true);
+
+    // dacă avem deja subscripție, nu facem nimic
     if (unsubscribe) return;
+
+    setLoading(true); // loading doar prima dată
 
     unsubscribe = subscribeToExpenses(
       (expenses) => {
@@ -87,10 +90,11 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
             : expenses.filter((e) => e.category === filterCategory);
 
         set({ expenses, filteredExpenses: filtered });
-        setLoading(false);
+
+        setLoading(false); // loading oprim după ce primele date vin
       },
-      (error) => {
-        setError(error);
+      (errorMsg) => {
+        setError(errorMsg);
         setLoading(false);
       },
     );
