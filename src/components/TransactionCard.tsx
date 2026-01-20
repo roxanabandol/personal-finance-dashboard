@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useExpenseStore } from "../store/useExpenseStore";
-import { useUIStore } from "../store/useUIStore";
 import { Expense } from "../types/expense";
 import { AnimatedListItem } from "./AnimatedListItem";
 import { Modal } from "./Modal";
@@ -13,15 +12,15 @@ interface Props {
 
 export const TransactionCard = ({ expense }: Props) => {
   const { deleteExpense, updateExpense } = useExpenseStore();
-  const { isModalOpen, openModal, closeModal } = useUIStore();
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [description, setDescription] = useState(expense.description);
   const [amount, setAmount] = useState(expense.amount);
   const [category, setCategory] = useState(expense.category);
 
   const handleUpdate = async () => {
     await updateExpense({ ...expense, description, amount, category });
-    closeModal();
+    setIsModalOpen(false);
   };
 
   const handleDelete = async () => {
@@ -45,7 +44,7 @@ export const TransactionCard = ({ expense }: Props) => {
             ${expense.amount.toFixed(2)}
           </p>
           <button
-            onClick={openModal}
+            onClick={() => setIsModalOpen(true)}
             className="text-yellow-500 hover:text-yellow-700"
           >
             Edit
@@ -60,7 +59,7 @@ export const TransactionCard = ({ expense }: Props) => {
       </AnimatedListItem>
 
       {isModalOpen && (
-        <Modal onClose={closeModal}>
+        <Modal onClose={() => setIsModalOpen(false)}>
           <h2 className="text-lg font-bold mb-4 text-gray-800 dark:text-white">
             Edit Transaction
           </h2>
