@@ -1,45 +1,56 @@
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc,
+  query,
+  orderBy,
+  DocumentData,
+} from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import { Expense } from "../types/expense";
-import axios from "axios";
 
-const API_URL = "http://localhost:3001/expenses";
+const expenseCollection = collection(db, "expenses");
 
-export const fetchExpenses = async (): Promise<Expense[]> => {
-  try {
-    const res = await axios.get(API_URL);
-    return res.data;
-  } catch (err) {
-    console.error("Error fetching expenses:", err);
-    return [];
-  }
+export const subscribeToExpenses = (
+  callback: (expenses: Expense[]) => void,
+  onError?: (error: string) => void,
+) => {
+  const q = query(expenseCollection, orderBy("date", "desc"));
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const expenses: Expense[] = snapshot.docs.map((doc) => {
+        const data = doc.data() as DocumentData;
+        return {
+          id: doc.id,
+          description: data.description as string,
+          amount: data.amount as number,
+          category: data.category as string,
+          date: data.date as string,
+        };
+      });
+
+      callback(expenses);
+    },
+    () => {
+      onError?.("Failed to sync expenses in real-time");
+    },
+  );
 };
 
-export const addExpenseAPI = async (
-  expense: Omit<Expense, "id">,
-): Promise<Expense> => {
-  try {
-    const res = await axios.post(API_URL, expense);
-    return res.data;
-  } catch (err) {
-    console.error("Error adding expense:", err);
-    throw err;
-  }
+export const addExpenseAPI = async (expense: Omit<Expense, "id">) => {
+  await addDoc(expenseCollection, expense);
 };
 
-export const deleteExpenseAPI = async (id: number) => {
-  try {
-    await axios.delete(`${API_URL}/${id}`);
-  } catch (err) {
-    console.error("Error deleting expense:", err);
-    throw err;
-  }
+export const deleteExpenseAPI = async (id: string) => {
+  await deleteDoc(doc(db, "expenses", id));
 };
 
-export const updateExpenseAPI = async (expense: Expense): Promise<Expense> => {
-  try {
-    const res = await axios.put(`${API_URL}/${expense.id}`, expense);
-    return res.data;
-  } catch (err) {
-    console.error("Error updating expense:", err);
-    throw err;
-  }
+export const updateExpenseAPI = async (expense: Expense) => {
+  const { id, ...data } = expense;
+  await updateDoc(doc(db, "expenses", id), data);
 };

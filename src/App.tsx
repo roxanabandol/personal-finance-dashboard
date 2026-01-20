@@ -1,10 +1,19 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Dashboard } from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard";
 import { Transactions } from "./pages/Transactions";
 import { Sidebar } from "./components/Sidebar";
 import { Header } from "./components/Header";
+import { useEffect } from "react";
+import { useExpenseStore } from "./store/useExpenseStore";
 
 function App() {
+  const { startRealtimeSync, stopRealtimeSync } = useExpenseStore();
+
+  useEffect(() => {
+    startRealtimeSync();
+    return () => stopRealtimeSync();
+  }, []);
+
   return (
     <Router>
       <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
